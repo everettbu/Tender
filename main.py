@@ -6,10 +6,14 @@ from kivy.uix.image import AsyncImage
 from kivy.uix.button import Button
 from fetch import fetch_restaurants
 
-# Bypasses SSL verification (needs to be fixed)
+
 import ssl
-from urllib.request import urlopen
 ssl._create_default_https_context = ssl._create_unverified_context
+"""
+Needs to be fixed, replace '/path/to/certificate.pem'  with the actual path to SSL certificate file.
+import ssl
+ssl._create_default_https_context = ssl.create_default_context(cafile="/path/to/certificate.pem")
+"""
 
 kivy.require('2.0.0')
 
