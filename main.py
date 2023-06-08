@@ -2,9 +2,9 @@ import kivy
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import AsyncImage
-from kivy.uix.button import Button
-from kivy.uix.behaviors import ButtonBehavior
-from fetch import fetch_restaurants, fetch_photos
+from kivy.uix.label import Label
+from app.fetch import fetch_restaurants, fetch_photos
+from app.circlebutton import CircleButton
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -12,11 +12,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 kivy.require('2.0.0')
 
 
-class CircleButton(ButtonBehavior, AsyncImage):
-    pass
-
-
-class RestaurantApp(App):
+class Tender(App):
     def build(self):
         layout = FloatLayout()
         self.restaurants = fetch_restaurants()
@@ -67,6 +63,21 @@ class RestaurantApp(App):
         # Update the displayed photo
         self.image.source = self.photos[self.current_photo]
 
+    def all_restaurants_displayed(self):
+        return self.current_restaurant >= len(self.restaurants)
+
+    def display_no_restaurants_available_message(self):
+        self.image.source = ''  # Clear the current photo
+        self.image.opacity = 0.5  # Set the image opacity to indicate no more restaurants
+        self.image.disabled = True  # Disable touch events on the image
+
+        message_label = Label(
+            text='No more restaurants available',
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            color=(1, 0, 0, 1)  # Set the label text color to red
+        )
+        self.root.add_widget(message_label)
+
     def on_favorite_button_release(self, instance):
         # Add your logic to handle favoriting the current restaurant
         print("Restaurant favorited!")
@@ -75,9 +86,9 @@ class RestaurantApp(App):
         self.current_restaurant += 1
 
         # Check if all restaurants have been displayed
-        if self.current_restaurant >= len(self.restaurants):
-            # Reset the restaurant index
-            self.current_restaurant = 0
+        if self.all_restaurants_displayed():
+            self.display_no_restaurants_available_message()
+            return
 
         # Fetch photos for the next restaurant
         self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
@@ -91,9 +102,9 @@ class RestaurantApp(App):
         self.current_restaurant += 1
 
         # Check if all restaurants have been displayed
-        if self.current_restaurant >= len(self.restaurants):
-            # Reset the restaurant index
-            self.current_restaurant = 0
+        if self.all_restaurants_displayed():
+            self.display_no_restaurants_available_message()
+            return
 
         # Fetch photos for the next restaurant
         self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
@@ -102,9 +113,10 @@ class RestaurantApp(App):
         # Update the displayed photo
         self.image.source = self.photos[self.current_photo]
 
+
     def on_pause(self):
         return True
 
 
 if __name__ == '__main__':
-    RestaurantApp().run()
+    Tender().run()
