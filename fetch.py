@@ -4,7 +4,7 @@ import json
 API_KEY = "jUfIkEVK3dqjWE56cm0fwJYb3Q9reoBLfB-Glts0gHp17-6OLgSwl-ttbTvhjL_datKjk1KB-rnrR3r-2bdz4tCdVcCfD6WcEBV0b_Nb5J3saM1O9gi_J6VpheKAZHYx"
 
 def fetch_restaurants():
-    url = "https://api.yelp.com/v3/businesses/search?term=restaurants&location=austin"
+    url = "https://api.yelp.com/v3/businesses/search?term=restaurants&location=austin&limit=2"
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -30,7 +30,3 @@ def fetch_photos(business_id):
     photos = data.get("photos", [])
 
     return photos
-
-
-# only pull 3 resturaunts, save API calls
-# photo display not working, but the photos are there

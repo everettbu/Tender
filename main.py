@@ -1,80 +1,110 @@
 import kivy
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import AsyncImage
 from kivy.uix.button import Button
-from fetch import fetch_restaurants
-
+from kivy.uix.behaviors import ButtonBehavior
+from fetch import fetch_restaurants, fetch_photos
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
-"""
-Needs to be fixed, replace '/path/to/certificate.pem'  with the actual path to SSL certificate file.
-import ssl
-ssl._create_default_https_context = ssl.create_default_context(cafile="/path/to/certificate.pem")
-"""
 
 kivy.require('2.0.0')
 
-class Tender(App):
+
+class CircleButton(ButtonBehavior, AsyncImage):
+    pass
+
+
+class RestaurantApp(App):
     def build(self):
-        layout = BoxLayout(orientation='vertical')
+        layout = FloatLayout()
         self.restaurants = fetch_restaurants()
-        self.current_index = 0
+        self.current_restaurant = 0
+        self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
+        self.current_photo = 0
 
-        self.label = Label(text=self.restaurants[self.current_index]['name'])
-        self.image = AsyncImage(source=self.restaurants[self.current_index]['image_url'])
-        self.restaurant_widget = BoxLayout(orientation='vertical')
-        self.restaurant_widget.add_widget(self.image)
-        self.restaurant_widget.add_widget(self.label)
+        # Display the first photo
+        self.image = AsyncImage(source=self.photos[self.current_photo], size_hint=(1, 0.9))
+        self.image.bind(on_touch_down=self.on_image_touch_down)
+        layout.add_widget(self.image)
 
-        layout.add_widget(self.restaurant_widget)
 
-        # Button layout
-        button_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
+        # Button to skip to the next restaurant
+        skip_button = CircleButton(
+            source='skip.png',
+            size_hint=(None, None),
+            size=(100, 100),
+            pos_hint={'center_x': 0.4, 'y': 0.1}
+        )
+        skip_button.bind(on_release=self.on_skip_button_release)
+        layout.add_widget(skip_button)
 
-        # Favorite Button
-        favorite_button = Button(text="Favorite", size_hint=(0.5, None), height=50)
-        favorite_button.bind(on_press=self.favorite_restaurant)
-        button_layout.add_widget(favorite_button)
-
-        # Skip Button
-        skip_button = Button(text="Skip", size_hint=(0.5, None), height=50)
-        skip_button.bind(on_press=self.skip_restaurant)
-        button_layout.add_widget(skip_button)
-
-        layout.add_widget(button_layout)
+        # Button to favorite the restaurant
+        favorite_button = CircleButton(
+            source='favorite.png',
+            size_hint=(None, None),
+            size=(100, 100),
+            pos_hint={'center_x': 0.6, 'y': 0.1}
+        )
+        favorite_button.bind(on_release=self.on_favorite_button_release)
+        layout.add_widget(favorite_button)
 
         return layout
 
-    def favorite_restaurant(self, instance):
-        # Add restaurant to user's favorites list
-        restaurant = self.restaurants[self.current_index]
-        # Implement your logic to add the restaurant to favorites
-        print(f"Restaurant '{restaurant['name']}' added to favorites.")
+    def on_image_touch_down(self, instance, touch):
+        if touch.is_double_tap:
+            return
 
-        # Move to the next restaurant
-        self.current_index += 1
+        # Increment the current photo index
+        self.current_photo += 1
 
-        if self.current_index < len(self.restaurants):
-            self.label.text = self.restaurants[self.current_index]['name']
-            self.image.source = self.restaurants[self.current_index]['image_url']
-        else:
-            self.label.text = "No more restaurants"
-            self.image.source = ""
+        # Check if all photos for the current restaurant have been displayed
+        if self.current_photo >= len(self.photos):
+            # Reset the photo index
+            self.current_photo = 0
 
-    def skip_restaurant(self, instance):
-        # Move to the next restaurant
-        self.current_index += 1
+        # Update the displayed photo
+        self.image.source = self.photos[self.current_photo]
 
-        if self.current_index < len(self.restaurants):
-            self.label.text = self.restaurants[self.current_index]['name']
-            self.image.source = self.restaurants[self.current_index]['image_url']
-        else:
-            self.label.text = "No more restaurants"
-            self.image.source = ""
+    def on_favorite_button_release(self, instance):
+        # Add your logic to handle favoriting the current restaurant
+        print("Restaurant favorited!")
+
+        # Increment the current restaurant index
+        self.current_restaurant += 1
+
+        # Check if all restaurants have been displayed
+        if self.current_restaurant >= len(self.restaurants):
+            # Reset the restaurant index
+            self.current_restaurant = 0
+
+        # Fetch photos for the next restaurant
+        self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
+        self.current_photo = 0
+
+        # Update the displayed photo
+        self.image.source = self.photos[self.current_photo]
+
+    def on_skip_button_release(self, instance):
+        # Increment the current restaurant index
+        self.current_restaurant += 1
+
+        # Check if all restaurants have been displayed
+        if self.current_restaurant >= len(self.restaurants):
+            # Reset the restaurant index
+            self.current_restaurant = 0
+
+        # Fetch photos for the next restaurant
+        self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
+        self.current_photo = 0
+
+        # Update the displayed photo
+        self.image.source = self.photos[self.current_photo]
+
+    def on_pause(self):
+        return True
+
 
 if __name__ == '__main__':
-    Tender().run()
-    
+    RestaurantApp().run()
