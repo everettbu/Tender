@@ -21,7 +21,7 @@ class Tender(App):
         self.current_photo = 0
 
         # Display the first photo
-        self.image = AsyncImage(source=self.photos[self.current_photo], size_hint=(1, 0.9))
+        self.image = AsyncImage(source=self.photos[self.current_photo], size_hint=(1, 1), pos_hint={'center_x': 0.5, 'center_y': 0.5})
         self.image.bind(on_touch_down=self.on_image_touch_down)
         layout.add_widget(self.image)
 

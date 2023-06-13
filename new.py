@@ -1,3 +1,6 @@
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
 import requests
 
 API_KEY = 'AIzaSyA-_xhU4zr04MiShUCvaso-atYGofXU1fM'
@@ -12,16 +15,7 @@ def fetch_restaurants():
     response = requests.get(url)
     data = response.json()
     if 'results' in data:
-        restaurants = data['results'][:NUM_RESULTS]
-        formatted_restaurants = []
-        for restaurant in restaurants:
-            formatted_restaurant = {
-                'id': restaurant['place_id'],
-                'name': restaurant['name'],
-                'address': restaurant['vicinity'],
-            }
-            formatted_restaurants.append(formatted_restaurant)
-        return formatted_restaurants
+        return data['results'][:NUM_RESULTS]
     else:
         return []
 
@@ -38,12 +32,22 @@ def fetch_photos(place_id):
             photo_urls.append(photo_url)
         return photo_urls
     else:
+        print(f"No photos found for {place_id}")
         return []
 
+class RestaurantApp(App):
+    def build(self):
+        layout = BoxLayout(orientation='vertical')
+
+        restaurants = fetch_restaurants()
+        for restaurant in restaurants:
+            place_id = restaurant['place_id']
+            photos = fetch_photos(place_id)
+            for photo_url in photos:
+                image = Image(source=photo_url)
+                layout.add_widget(image)
+
+        return layout
+
 if __name__ == '__main__':
-    restaurants = fetch_restaurants()
-    for restaurant in restaurants:
-        place_id = restaurant['place_id']
-        photos = fetch_photos(place_id)
-        print(f"Photos for {restaurant['name']}: {photos}")
-        print("-" * 40)
+    RestaurantApp().run()
