@@ -1,5 +1,22 @@
-<CircleButton>:
-    # Add CircleButton kv properties here
+# tender.kv
 
-<Tender>:
-    # Add layout and widget properties here
+FloatLayout:
+    AsyncImage:
+        id: image
+        size_hint: 1, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        on_touch_down: app.on_image_touch_down(self, touch)
+
+    CircleButton:
+        source: 'skip.png'
+        size_hint: None, None
+        size: 100, 100
+        pos_hint: {'center_x': 0.4, 'y': 0.1}
+        on_release: app.on_skip_button_release(self)
+
+    CircleButton:
+        source: 'favorite.png'
+        size_hint: None, None
+        size: 100, 100
+        pos_hint: {'center_x': 0.6, 'y': 0.1}
+        on_release: app.on_favorite_button_release(self)

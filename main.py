@@ -20,11 +20,22 @@ class Tender(App):
         self.photos = fetch_photos(self.restaurants[self.current_restaurant]['id'])
         self.current_photo = 0
 
+        # Display the restaurant name
+        restaurant_name = Label(
+        text=self.restaurants[self.current_restaurant]['name'],
+        font_size=40,
+        size_hint=(1, None),
+        height=70,
+        pos_hint={'top': 1}) 
+        layout.add_widget(restaurant_name)
+
         # Display the first photo
-        self.image = AsyncImage(source=self.photos[self.current_photo], size_hint=(1, 1), pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        self.image = AsyncImage(
+        source=self.photos[self.current_photo],
+        size_hint=(1, 1), 
+        pos_hint={'center_x': 0.5, 'center_y': 0.5})
         self.image.bind(on_touch_down=self.on_image_touch_down)
         layout.add_widget(self.image)
-
 
         # Button to skip to the next restaurant
         skip_button = CircleButton(
